@@ -38,53 +38,53 @@ module.exports = class Minesweeper extends Plugin {
     let internal = component._reactInternalFiber;
 
     do {
-      if(internal.type != null && (internal.type.displayName || internal.type) === componentType) {
+      if (internal.type !== null && (internal.type.displayName || internal.type) === componentType) {
         return internal.stateNode;
-      } 
-    }while(internal = internal.return);
+      }
+    } while ((internal = internal.return) !== null);
 
     return null;
   }
 
   async start () {
-    BOT_AVATARS['minesweeper'] = 'https://i.imgur.com/LGQUFYQ.png';
+    BOT_AVATARS.minesweeper = 'https://i.imgur.com/LGQUFYQ.png';
 
     const _this = this;
     const Spoiler = getModuleByDisplayName('Spoiler');
-    inject('pc-minesweeper-spoiler', Spoiler.prototype, 'componentDidMount', function (args, res) {
+    inject('pc-minesweeper-spoiler', Spoiler.prototype, 'componentDidMount', function (args, res) { // eslint-disable-line func-names
       const messageComponent = _this.getParent(this, 'MessageContent');
-      const message = messageComponent.props.message;
+      const { message } = messageComponent.props;
 
-      if(message.author.id === '1' && message.author.username === 'Minesweeper') {
-        if(!message.minesweeper) {
+      if (message.author.id === '1' && message.author.username === 'Minesweeper') {
+        if (!message.minesweeper) {
           message.minesweeper = {
             tiles: parseMessage(message.content)
-          }
+          };
         }
 
-        const spoilers = [...messageComponent._reactInternalFiber.child.child.stateNode.children[1].children];
+        const spoilers = [ ...messageComponent._reactInternalFiber.child.child.stateNode.children[1].children ];
         const child = this._reactInternalFiber.child.child.child.stateNode;
-        
+
         const index = spoilers.findIndex(e => e === child.ref);
 
-        const y = Math.floor(index/message.minesweeper.tiles[0].length);
+        const y = Math.floor(index / message.minesweeper.tiles[0].length);
         const x = index % message.minesweeper.tiles[0].length;
 
         const tile = message.minesweeper.tiles[y][x];
 
-        child.ref.addEventListener('click', (event) => {
-          if(!tile.flagged && !tile.revealed) {
+        child.ref.addEventListener('click', (e) => {
+          if (!tile.flagged && !tile.revealed) {
             tile.revealed = true;
             tile.flagged = false;
 
-            if(tile.type === TileType.BOMB) {
+            if (tile.type === TileType.BOMB) {
               message.minesweeper.tiles.forEach((tiles) => {
-                tiles.forEach((tile) => {
-                  tile.revealed = true;
-                  tile.flagged = false;
+                tiles.forEach((t) => {
+                  t.revealed = true;
+                  t.flagged = false;
                 });
               });
-              
+
               spoilers.forEach((element) => {
                 _this.getParent(getOwnerInstance(element), 'Spoiler').setState({ visible: true });
               });
@@ -94,44 +94,44 @@ module.exports = class Minesweeper extends Plugin {
                 intensity: 10
               });
             }
-          }else{
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
+          } else {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
           }
         });
 
-        child.ref.addEventListener('contextmenu', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          
-          if(!tile.revealed) {
+        child.ref.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (!tile.revealed) {
             tile.flagged = !tile.flagged;
 
-            if(tile.flagged) {
+            if (tile.flagged) {
               child.ref.children[0].style.display = 'none';
-              child.ref.innerHTML += `<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">`;
-            }else{
+              child.ref.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
+            } else {
               child.ref.children[0].style.display = '';
               child.ref.children[1].remove();
             }
           }
         });
 
-        if(tile.flagged) {
+        if (tile.flagged) {
           child.ref.children[0].style.display = 'none';
-          child.ref.innerHTML += `<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">`;
+          child.ref.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
         }
 
-        if(tile.revealed) {
+        if (tile.revealed) {
           this.setState({ visible: true });
         }
       }
 
       return res;
     });
-    
+
     powercord
       .pluginManager
       .get('pc-commands')
@@ -140,26 +140,26 @@ module.exports = class Minesweeper extends Plugin {
         'Play a game of minesweeper',
         '{c} <size> <bombs>',
         (args) => {
-          if(args.length > 2) {
+          if (args.length > 2) {
             return 'Too many arguments';
           }
 
           const size = Math.max(Math.min(Number.parseInt(args.length >= 1 ? args[0] : '') || 10, 14), 1);
           const bombs = Math.max(Math.min((() => {
-            if(args.length == 2) {
+            if (args.length === 2) {
               const argument = args[1];
-              if(argument.endsWith('%')) {
+              if (argument.endsWith('%')) {
                 const percentage = Number.parseInt(argument.slice(0, -1));
-                if(percentage) {
-                  return Math.round((size * size) * (Math.min(percentage, 100)/100));
+                if (percentage) {
+                  return Math.round((size * size) * (Math.min(percentage, 100) / 100));
                 }
-              }else{
+              } else {
                 const percentage = Number.parseFloat(argument);
-                if(percentage) {
-                  if(percentage > 0 && percentage < 1) {
+                if (percentage) {
+                  if (percentage > 0 && percentage < 1) {
                     return Math.round((size * size) * percentage);
                   }
-                  
+
                   return Number.parseInt(percentage);
                 }
               }
@@ -176,10 +176,12 @@ module.exports = class Minesweeper extends Plugin {
   }
 
   unload () {
-    const pcCommands = pluginManager.get('pc-commands');
-    pcCommands.unregister('minesweeper');
+    powercord
+      .pluginManager
+      .get('pc-commands')
+      .unregister('minesweeper');
 
-    delete BOT_AVATARS['minesweeper'];
+    delete BOT_AVATARS.minesweeper;
 
     uninject('pc-minesweeper-spoiler');
   }
