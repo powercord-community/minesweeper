@@ -79,6 +79,11 @@ module.exports = class Minesweeper extends Plugin {
               tile.flagged = false;
 
               if (tile.type === TileType.BOMB) {
+                tile.exploded = true;
+
+                child.ref.children[0].style.display = 'none';
+                child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
+
                 message.minesweeper.tiles.forEach((tiles) => {
                   tiles.forEach((t) => {
                     t.revealed = true;
@@ -127,6 +132,11 @@ module.exports = class Minesweeper extends Plugin {
 
           if (tile.revealed) {
             spoilerComponent.setState({ visible: true });
+          }
+
+          if (tile.exploded) {
+            child.ref.children[0].style.display = 'none';
+            child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
           }
         }
       }

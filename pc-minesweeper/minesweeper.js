@@ -38,7 +38,8 @@ module.exports.createTiles = function createTiles (size = 10, bombs = size) {
     tiles[y][x] = {
       type: TileType.BOMB,
       revealed: false,
-      flagged: false
+      flagged: false,
+      exploded: false
     };
   }
 
