@@ -62,8 +62,11 @@ module.exports = class Minesweeper extends Plugin {
         }
 
         const spoilers = [ ...this._reactInternalFiber.child.child.stateNode.children[1].children ];
+        const spoilerComponents = [];
         for (const spoiler of spoilers) {
           const spoilerComponent = _this.getParent(getOwnerInstance(spoiler), 'Spoiler');
+          spoilerComponents.push(spoilerComponent);
+
           const child = spoilerComponent._reactInternalFiber.child.child.child.stateNode;
 
           const index = spoilers.findIndex(e => e === child.ref);
@@ -72,6 +75,8 @@ module.exports = class Minesweeper extends Plugin {
           const x = index % message.minesweeper.tiles[0].length;
 
           const tile = message.minesweeper.tiles[y][x];
+
+          spoilerComponent.props.tile = tile;
 
           child.ref.addEventListener('click', (e) => {
             if (!tile.flagged && !tile.revealed) {
@@ -84,15 +89,17 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = 'none';
                 child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
 
-                message.minesweeper.tiles.forEach((tiles) => {
-                  tiles.forEach((t) => {
-                    t.revealed = true;
-                    t.flagged = false;
-                  });
-                });
+                spoilerComponents.forEach((component) => {
+                  component.setState({ visible: true });
 
-                spoilers.forEach((element) => {
-                  _this.getParent(getOwnerInstance(element), 'Spoiler').setState({ visible: true });
+                  const childComponent = component._reactInternalFiber.child.child.child.stateNode;
+                  if (component.props.tile.flagged) {
+                    childComponent.ref.children[0].style.display = '';
+                    childComponent.ref.children[1].remove();
+                  }
+
+                  component.props.tile.revealed = true;
+                  component.props.tile.flagged = false;
                 });
 
                 ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
