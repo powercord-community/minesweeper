@@ -105,6 +105,9 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = 'none';
                 child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
 
+                const audio = new Audio('https://my.mixtape.moe/ugeaji.mp3');
+                audio.play();
+
                 spoilerComponents.forEach((component) => {
                   component.setState({ visible: true });
 
@@ -119,7 +122,7 @@ module.exports = class Minesweeper extends Plugin {
                 });
 
                 ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
-                  duration: 800,
+                  duration: 1600,
                   intensity: 10
                 });
               } else {
