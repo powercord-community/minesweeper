@@ -63,6 +63,22 @@ module.exports = class Minesweeper extends Plugin {
 
         const spoilers = [ ...this._reactInternalFiber.child.child.stateNode.children[1].children ];
         const spoilerComponents = [];
+
+        function checkVictory () {
+          const notRevealed = message.minesweeper.tiles
+            .flatMap(t => t)
+            .filter(t => !t.revealed);
+
+          const flagged = notRevealed
+            .filter(t => t.flagged);
+
+          if (notRevealed.length === flagged.length) {
+            if (flagged.filter(t => t.type !== TileType.BOMB) === 0) {
+              message.minesweeper.victory = true;
+            }
+          }
+        }
+
         for (const spoiler of spoilers) {
           const spoilerComponent = _this.getParent(getOwnerInstance(spoiler), 'Spoiler');
           spoilerComponents.push(spoilerComponent);
@@ -79,7 +95,7 @@ module.exports = class Minesweeper extends Plugin {
           spoilerComponent.props.tile = tile;
 
           child.ref.addEventListener('click', (e) => {
-            if (!tile.flagged && !tile.revealed) {
+            if (!message.minesweeper.victory && !tile.flagged && !tile.revealed) {
               tile.revealed = true;
               tile.flagged = false;
 
@@ -106,6 +122,8 @@ module.exports = class Minesweeper extends Plugin {
                   duration: 800,
                   intensity: 10
                 });
+              } else {
+                checkVictory();
               }
             } else {
               e.preventDefault();
@@ -119,7 +137,7 @@ module.exports = class Minesweeper extends Plugin {
             e.stopPropagation();
             e.stopImmediatePropagation();
 
-            if (!tile.revealed) {
+            if (!message.minesweeper.victory && !tile.revealed) {
               tile.flagged = !tile.flagged;
 
               if (tile.flagged) {
@@ -129,6 +147,8 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = '';
                 child.ref.children[1].remove();
               }
+
+              checkVictory();
             }
           });
 
