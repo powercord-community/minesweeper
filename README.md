@@ -3,3 +3,6 @@ This is a minesweeper plugin made for [Powercord](https://github.com/powercord-o
 
 ## Installation
 Drop the **pc-minesweeper** directory in to src/powercord/plugins
+
+## Example
+![](Example.gif)
