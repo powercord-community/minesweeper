@@ -49,6 +49,8 @@ module.exports = class Minesweeper extends Plugin {
   async start () {
     BOT_AVATARS.minesweeper = 'https://i.imgur.com/LGQUFYQ.png';
 
+    const audio = new Audio('https://my.mixtape.moe/ugeaji.mp3');
+
     const _this = this;
 
     const MessageContent = getModuleByDisplayName('MessageContent');
@@ -105,9 +107,6 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = 'none';
                 child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
 
-                const audio = new Audio('https://my.mixtape.moe/ugeaji.mp3');
-                audio.play();
-
                 spoilerComponents.forEach((component) => {
                   component.setState({ visible: true });
 
@@ -121,10 +120,14 @@ module.exports = class Minesweeper extends Plugin {
                   component.props.tile.flagged = false;
                 });
 
-                ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
-                  duration: 1600,
-                  intensity: 10
-                });
+                (async() => {
+                  await audio.play();
+
+                  ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
+                    duration: 1600,
+                    intensity: 10
+                  });
+                })();
               } else {
                 checkVictory();
               }
