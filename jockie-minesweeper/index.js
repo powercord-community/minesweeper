@@ -47,9 +47,10 @@ module.exports = class Minesweeper extends Plugin {
   }
 
   async start () {
-    BOT_AVATARS.minesweeper = 'https://i.imgur.com/LGQUFYQ.png';
+    BOT_AVATARS.minesweeper = 'https://derpy.srgg.de/image/minesweeper/icon.png';
 
-    const audio = new Audio('https://my.mixtape.moe/ugeaji.mp3');
+    const bombAudio = new Audio('https://derpy.srgg.de/audio/minesweeper/bomb.ogg');
+    const flagAudio = new Audio('https://derpy.srgg.de/audio/minesweeper/flag.ogg');
 
     const _this = this;
 
@@ -121,7 +122,7 @@ module.exports = class Minesweeper extends Plugin {
                 });
 
                 (async() => {
-                  await audio.play();
+                  await bombAudio.play();
 
                   ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
                     duration: 1600,
@@ -153,6 +154,8 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = '';
                 child.ref.children[1].remove();
               }
+
+              flagAudio.play();
 
               checkVictory();
             }
