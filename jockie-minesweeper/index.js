@@ -146,7 +146,7 @@ module.exports = class Minesweeper extends Plugin {
 
             if (!message.minesweeper.victory && !tile.revealed) {
               tile.flagged = !tile.flagged;
-              flagAudio.play();
+
               if (tile.flagged) {
                 child.ref.children[0].style.display = 'none';
                 child.ref.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
@@ -154,6 +154,8 @@ module.exports = class Minesweeper extends Plugin {
                 child.ref.children[0].style.display = '';
                 child.ref.children[1].remove();
               }
+
+              flagAudio.play();
 
               checkVictory();
             }
