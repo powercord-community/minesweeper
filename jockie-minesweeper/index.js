@@ -1,4 +1,4 @@
-const Plugin = require('powercord/Plugin');
+const { Plugin } = require('powercord/entities');
 
 const {
   getModuleByDisplayName,
@@ -46,7 +46,7 @@ module.exports = class Minesweeper extends Plugin {
     return null;
   }
 
-  async start () {
+  async startPlugin () {
     BOT_AVATARS.minesweeper = 'https://derpy.srgg.de/image/minesweeper/icon.png';
 
     const bombAudio = new Audio('https://derpy.srgg.de/audio/minesweeper/bomb.ogg');
@@ -121,7 +121,7 @@ module.exports = class Minesweeper extends Plugin {
                   component.props.tile.flagged = false;
                 });
 
-                (async() => {
+                (async () => {
                   await bombAudio.play();
 
                   ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
@@ -223,7 +223,7 @@ module.exports = class Minesweeper extends Plugin {
       );
   }
 
-  unload () {
+  pluginWillUnload () {
     powercord
       .pluginManager
       .get('pc-commands')
