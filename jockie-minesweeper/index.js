@@ -47,10 +47,10 @@ module.exports = class Minesweeper extends Plugin {
   }
 
   async startPlugin () {
-    BOT_AVATARS.minesweeper = 'https://derpy.srgg.de/image/minesweeper/icon.png';
+    BOT_AVATARS.minesweeper = 'https://cdn.derpyenterprises.org/minesweeper/icon.png';
 
-    const bombAudio = new Audio('https://derpy.srgg.de/audio/minesweeper/bomb.ogg');
-    const flagAudio = new Audio('https://derpy.srgg.de/audio/minesweeper/flag.ogg');
+    const bombAudio = new Audio('https://cdn.derpyenterprises.org/minesweeper/bomb.ogg');
+    const flagAudio = new Audio('https://cdn.derpyenterprises.org/minesweeper/flag.ogg');
 
     const _this = this;
 
