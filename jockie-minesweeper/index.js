@@ -86,8 +86,7 @@ module.exports = class Minesweeper extends Plugin {
           const spoilerComponent = _this.getParent(getOwnerInstance(spoiler), 'Spoiler');
           spoilerComponents.push(spoilerComponent);
 
-          const child = spoilerComponent._reactInternalFiber.child.child.child.stateNode;
-
+          const child = spoilerComponent._reactInternalFiber.child.child.child.child.stateNode;
           const index = spoilers.findIndex(e => e === child.ref);
 
           const y = Math.floor(index / message.minesweeper.tiles[0].length);
