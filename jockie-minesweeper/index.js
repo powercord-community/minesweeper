@@ -3,35 +3,41 @@ const { Plugin } = require('powercord/entities');
 const {
   getModuleByDisplayName,
   getModule,
-  channels: {
-    getChannelId
-  },
   constants: {
     ComponentActions
-  },
-  messages: {
-    createBotMessage,
-    receiveMessage
   }
 } = require('powercord/webpack');
 
 const { inject, uninject } = require('powercord/injector');
 const { getOwnerInstance } = require('powercord/util');
 
-const { createTiles, toMessage, parseMessage, TileType } = require('./minesweeper');
+const Minesweeper = require('./minesweeper');
 
-const { BOT_AVATARS } = getModule([ 'BOT_AVATARS' ]);
-const { ComponentDispatch } = getModule([ 'ComponentDispatch' ]);
+module.exports = class MinesweeperPlugin extends Plugin {
+  async import (filter, functionName = filter) {
+    if (typeof filter === 'string') {
+      filter = [ filter ];
+    }
 
-module.exports = class Minesweeper extends Plugin {
+    this[functionName] = (await getModule(filter))[functionName];
+  }
+
+  async doImport () {
+    await this.import('BOT_AVATARS');
+    await this.import('ComponentDispatch');
+    await this.import('createBotMessage');
+    await this.import('getChannelId');
+    await this.import('receiveMessage');
+  }
+
   sendPlayArea (tiles) {
-    const receivedMessage = createBotMessage(getChannelId(), '');
+    const receivedMessage = this.createBotMessage(this.getChannelId(), '');
     receivedMessage.author.username = 'Minesweeper';
     receivedMessage.author.avatar = 'minesweeper';
 
-    receivedMessage.content = toMessage(tiles);
+    receivedMessage.content = Minesweeper.toMessage(tiles);
 
-    return receiveMessage(receivedMessage.channel_id, receivedMessage);
+    return this.receiveMessage(receivedMessage.channel_id, receivedMessage);
   }
 
   getParent (component, componentType) {
@@ -47,20 +53,22 @@ module.exports = class Minesweeper extends Plugin {
   }
 
   async startPlugin () {
-    BOT_AVATARS.minesweeper = 'https://cdn.derpyenterprises.org/minesweeper/icon.png';
+    await this.doImport();
+
+    this.BOT_AVATARS.minesweeper = 'https://cdn.derpyenterprises.org/minesweeper/icon.png';
 
     const bombAudio = new Audio('https://cdn.derpyenterprises.org/minesweeper/bomb.ogg');
     const flagAudio = new Audio('https://cdn.derpyenterprises.org/minesweeper/flag.ogg');
 
     const _this = this;
 
-    const MessageContent = getModuleByDisplayName('MessageContent');
+    const MessageContent = await getModuleByDisplayName('MessageContent');
     inject('jockie-minesweeper-message', MessageContent.prototype, 'componentDidMount', function (args, res) { // eslint-disable-line func-names
       const { message } = this.props;
       if (message.author.id === '1' && message.author.username === 'Minesweeper') {
         if (!message.minesweeper) {
           message.minesweeper = {
-            tiles: parseMessage(message.content)
+            tiles: Minesweeper.parseMessage(message.content)
           };
         }
 
@@ -76,7 +84,7 @@ module.exports = class Minesweeper extends Plugin {
             .filter(t => t.flagged);
 
           if (notRevealed.length === flagged.length) {
-            if (flagged.filter(t => t.type !== TileType.BOMB) === 0) {
+            if (flagged.filter(t => t.type !== Minesweeper.TileType.BOMB) === 0) {
               message.minesweeper.victory = true;
             }
           }
@@ -101,7 +109,7 @@ module.exports = class Minesweeper extends Plugin {
               tile.revealed = true;
               tile.flagged = false;
 
-              if (tile.type === TileType.BOMB) {
+              if (tile.type === Minesweeper.TileType.BOMB) {
                 tile.exploded = true;
 
                 child.ref.children[0].style.display = 'none';
@@ -110,7 +118,7 @@ module.exports = class Minesweeper extends Plugin {
                 spoilerComponents.forEach((component) => {
                   component.setState({ visible: true });
 
-                  const childComponent = component._reactInternalFiber.child.child.child.stateNode;
+                  const childComponent = component._reactInternalFiber.child.child.child.child.stateNode;
                   if (component.props.tile.flagged) {
                     childComponent.ref.children[0].style.display = '';
                     childComponent.ref.children[1].remove();
@@ -123,7 +131,7 @@ module.exports = class Minesweeper extends Plugin {
                 (async () => {
                   await bombAudio.play();
 
-                  ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
+                  _this.ComponentDispatch.dispatch(ComponentActions.SHAKE_APP, {
                     duration: 1600,
                     intensity: 10
                   });
@@ -179,56 +187,49 @@ module.exports = class Minesweeper extends Plugin {
       return res;
     });
 
-    powercord
-      .pluginManager
-      .get('pc-commands')
-      .register(
-        'minesweeper',
-        'Play a game of minesweeper',
-        '{c} <size> <bombs>',
-        (args) => {
-          if (args.length > 2) {
-            return 'Too many arguments';
-          }
+    this.registerCommand(
+      'minesweeper',
+      [],
+      'Play a game of minesweeper',
+      '{c} <size> <bombs>',
+      (args) => {
+        if (args.length > 2) {
+          return 'Too many arguments';
+        }
 
-          const size = Math.max(Math.min(Number.parseInt(args.length >= 1 ? args[0] : '') || 10, 14), 1);
-          const bombs = Math.max(Math.min((() => {
-            if (args.length === 2) {
-              const argument = args[1];
-              if (argument.endsWith('%')) {
-                const percentage = Number.parseInt(argument.slice(0, -1));
-                if (percentage) {
-                  return Math.round((size * size) * (Math.min(percentage, 100) / 100));
+        const size = Math.max(Math.min(Number.parseInt(args.length >= 1 ? args[0] : '') || 10, 14), 1);
+        const bombs = Math.max(Math.min((() => {
+          if (args.length === 2) {
+            const argument = args[1];
+            if (argument.endsWith('%')) {
+              const percentage = Number.parseInt(argument.slice(0, -1));
+              if (percentage) {
+                return Math.round((size * size) * (Math.min(percentage, 100) / 100));
+              }
+            } else {
+              const percentage = Number.parseFloat(argument);
+              if (percentage) {
+                if (percentage > 0 && percentage < 1) {
+                  return Math.round((size * size) * percentage);
                 }
-              } else {
-                const percentage = Number.parseFloat(argument);
-                if (percentage) {
-                  if (percentage > 0 && percentage < 1) {
-                    return Math.round((size * size) * percentage);
-                  }
 
-                  return Number.parseInt(percentage);
-                }
+                return Number.parseInt(percentage);
               }
             }
+          }
 
-            return size;
-          })(), size * size), 1);
+          return size;
+        })(), size * size), 1);
 
-          this.sendPlayArea(createTiles(size, bombs));
+        this.sendPlayArea(Minesweeper.createTiles(size, bombs));
 
-          return null;
-        }
-      );
+        return null;
+      }
+    );
   }
 
   pluginWillUnload () {
-    powercord
-      .pluginManager
-      .get('pc-commands')
-      .unregister('minesweeper');
-
-    delete BOT_AVATARS.minesweeper;
+    delete this.BOT_AVATARS.minesweeper;
 
     uninject('jockie-minesweeper-spoiler');
   }
