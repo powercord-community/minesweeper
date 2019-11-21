@@ -1,6 +1,6 @@
 {
   "name": "Minesweeper",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Play Minesweeper with the minesweeper command",
   "author": "Joakim#9814",
   "license": "MIT",

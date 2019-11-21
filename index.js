@@ -95,7 +95,7 @@ module.exports = class MinesweeperPlugin extends Plugin {
           spoilerComponents.push(spoilerComponent);
 
           const child = spoilerComponent._reactInternalFiber.child.child.child.child.stateNode;
-          const index = spoilers.findIndex(e => e === child.ref);
+          const index = spoilers.findIndex(e => e === child);
 
           const y = Math.floor(index / message.minesweeper.tiles[0].length);
           const x = index % message.minesweeper.tiles[0].length;
@@ -104,7 +104,7 @@ module.exports = class MinesweeperPlugin extends Plugin {
 
           spoilerComponent.props.tile = tile;
 
-          child.ref.addEventListener('click', (e) => {
+          child.addEventListener('click', (e) => {
             if (!message.minesweeper.victory && !tile.flagged && !tile.revealed) {
               tile.revealed = true;
               tile.flagged = false;
@@ -112,8 +112,8 @@ module.exports = class MinesweeperPlugin extends Plugin {
               if (tile.type === Minesweeper.TileType.BOMB) {
                 tile.exploded = true;
 
-                child.ref.children[0].style.display = 'none';
-                child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
+                child.children[0].style.display = 'none';
+                child.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
 
                 spoilerComponents.forEach((component) => {
                   component.setState({ visible: true });
@@ -146,7 +146,7 @@ module.exports = class MinesweeperPlugin extends Plugin {
             }
           });
 
-          child.ref.addEventListener('contextmenu', (e) => {
+          child.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
@@ -155,11 +155,11 @@ module.exports = class MinesweeperPlugin extends Plugin {
               tile.flagged = !tile.flagged;
 
               if (tile.flagged) {
-                child.ref.children[0].style.display = 'none';
-                child.ref.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
+                child.children[0].style.display = 'none';
+                child.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
               } else {
-                child.ref.children[0].style.display = '';
-                child.ref.children[1].remove();
+                child.children[0].style.display = '';
+                child.children[1].remove();
               }
 
               flagAudio.play();
@@ -169,8 +169,8 @@ module.exports = class MinesweeperPlugin extends Plugin {
           });
 
           if (tile.flagged) {
-            child.ref.children[0].style.display = 'none';
-            child.ref.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
+            child.children[0].style.display = 'none';
+            child.innerHTML += '<img src="/assets/a1f0c106b0a0f68f6b11c2dc0cc8d249.svg" class="emoji" alt=":triangular_flag_on_post:" draggable="false">';
           }
 
           if (tile.revealed) {
@@ -178,8 +178,8 @@ module.exports = class MinesweeperPlugin extends Plugin {
           }
 
           if (tile.exploded) {
-            child.ref.children[0].style.display = 'none';
-            child.ref.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
+            child.children[0].style.display = 'none';
+            child.innerHTML += '<img src="/assets/ef756c6ecfdc1cf509cb0175dd33c76d.svg" class="emoji" alt=":boom:" draggable="false">';
           }
         }
       }
