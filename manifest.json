@@ -4,6 +4,6 @@
   "description": "Play Minesweeper with the minesweeper command",
   "author": "Joakim#9814",
   "license": "MIT",
-  "repo": "https://github.com/21Joakim/pc-minesweeper",
+  "repo": "https://github.com/powercord-community/minesweeper",
   "dependencies": []
 }
